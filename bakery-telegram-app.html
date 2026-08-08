@@ -435,6 +435,10 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
 </div>
 
 <script>
+/* ---------------- Backend ---------------- */
+// 👉 Your deployed Render backend URL (no trailing slash)
+const BACKEND_URL = 'https://lily-cake-bot-backend.onrender.com';
+
 /* ---------------- Currency ---------------- */
 // 👉 Change this number any time the exchange rate updates
 const USD_TO_KHR = 4100; // 1 USD = 4,100 KHR (update as needed)
@@ -569,49 +573,69 @@ function updateCartPill(){
 function checkout(){
   const totalItems = Object.values(cart).reduce((a,b)=>a+b,0);
   if (totalItems === 0) return;
-  const lines = Object.entries(cart).map(([id,qty])=>{
-    const p = products.find(x=>x.id===id);
-    return `${p.name} x${qty} — ${formatBoth(p.price*qty)}`;
+
+  const itemNames = {};
+  Object.entries(cart).forEach(([id, qty]) => {
+    const p = products.find(x => x.id === id);
+    itemNames[p.name] = qty;
   });
   const total = Object.entries(cart).reduce((sum,[id,qty])=>{
     const p = products.find(x=>x.id===id);
     return sum + p.price*qty;
   },0);
-  const orderText = `🧁 New order from Lily Cake & Bread:\n${lines.join('\n')}\n\nTotal: ${formatBoth(total)}`;
-  const shopTelegramUsername = 'lilycakeshop'; // 👉 change this to your real Telegram username (no @)
 
-  // ✅ If running inside real Telegram, send the order straight to the bot backend — instant, no manual steps.
-  if (tg && tg.sendData) {
-    const itemNames = {};
-    Object.entries(cart).forEach(([id, qty]) => {
-      const p = products.find(x => x.id === id);
-      itemNames[p.name] = qty;
-    });
-    tg.sendData(JSON.stringify({
-      items: itemNames,
-      totalUsd: total,
-      totalRiel: Math.round(total * USD_TO_KHR / 100) * 100
-    }));
-    tg.close();
-    return;
-  }
+  // If running inside Telegram, grab the customer's Telegram identity so the
+  // shop owner sees who ordered, and so we can try to message them back directly.
+  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null;
 
-  // 🧪 Fallback for testing in a plain browser (outside Telegram): copy + open chat manually
-  const copyText = async () => {
-    try {
-      await navigator.clipboard.writeText(orderText);
-      return true;
-    } catch (err) {
-      return false;
-    }
+  const payload = {
+    items: itemNames,
+    totalUsd: total,
+    totalRiel: Math.round(total * USD_TO_KHR / 100) * 100,
+    customer: tgUser ? {
+      id: tgUser.id,
+      username: tgUser.username,
+      first_name: tgUser.first_name,
+      last_name: tgUser.last_name,
+    } : null,
   };
 
-  copyText().then(copied => {
-    alert(copied
-      ? 'Order copied! Paste it in the Telegram chat and tap Send.'
-      : orderText);
-    window.open(`https://t.me/${shopTelegramUsername}`, '_blank');
-  });
+  const showSuccess = () => {
+    const msg = 'ការបញ្ជាទិញត្រូវបានផ្ញើដោយជោគជ័យ! · Order sent successfully! 🎉';
+    if (tg && tg.showPopup) {
+      tg.showPopup({ title: '✅ Success', message: msg, buttons: [{ id: 'ok', type: 'default', text: 'OK' }] });
+    } else {
+      alert(msg);
+    }
+    // clear the cart after a successful order
+    Object.keys(cart).forEach(id => delete cart[id]);
+    renderProducts(currentCat);
+    updateCartPill();
+  };
+
+  const showFailureFallback = () => {
+    const lines = Object.entries(itemNames).map(([name, qty]) => `${name} x${qty}`);
+    const orderText = `🧁 New order from Lily Cake & Bread:\n${lines.join('\n')}\n\nTotal: ${formatBoth(total)}`;
+    const shopTelegramUsername = 'lilycakeshop'; // 👉 change this to your real Telegram username (no @)
+
+    navigator.clipboard.writeText(orderText).then(() => {
+      alert('Could not reach the shop automatically. Order copied — please paste it in the chat and tap Send.');
+      window.open(`https://t.me/${shopTelegramUsername}`, '_blank');
+    }).catch(() => {
+      alert(orderText);
+      window.open(`https://t.me/${shopTelegramUsername}`, '_blank');
+    });
+  };
+
+  // ✅ Works no matter how the Mini App was opened — direct link, browser, keyboard button, menu button
+  fetch(`${BACKEND_URL}/api/order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+    .then(res => res.ok ? res.json() : Promise.reject(new Error('Bad response')))
+    .then(data => data.ok ? showSuccess() : Promise.reject(new Error('Server error')))
+    .catch(() => showFailureFallback());
 }
 
 /* ---------------- Category chips ---------------- */
