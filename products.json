@@ -1,16 +1,23 @@
 [
-  { "id": "c1", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🍰", "image": "images/chocolate-cake.jpg", "name": "Chocolate Cake",     "nameKh": "ខេកសូកូឡា",       "price": 8.5 },
-  { "id": "c2", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🍓", "image": "images/strawberry-cake.jpg", "name": "Strawberry Cake",    "nameKh": "ខេកស្ត្របឺរី",     "price": 9   },
-  { "id": "c3", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🧁", "name": "Mini Cupcake (4pcs)","nameKh": "ខេកតូច ៤ដុំ",      "price": 5   },
-  { "id": "c4", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🎂", "name": "Birthday Cake",      "nameKh": "ខេកថ្ងៃកំណើត",     "price": 14  },
-  { "id": "c5", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🥭", "name": "Mango Cake",         "nameKh": "ខេកស្វាយ",        "price": 9.5 },
+  { "id": "c1", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🍰", "image": "images/2.jpg", "name": "Chocolate Cake",     "nameKh": "ខេកសូកូឡា",       "price": 8.5 },
+  { "id": "c2", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🍓", "image": "images/1.jpg", "name": "Strawberry Cake",    "nameKh": "ខេកស្ត្របឺរី",     "price": 9   },
+  { "id": "c3", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🧁", "image": "images/mini.jpg","name": "Mini Cupcake (4pcs)","nameKh": "ខេកតូច ៤ដុំ",      "price": 5   },
+  { "id": "c4", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🎂", "image": "images/birthday.jpg","name": "Birthday Cake",      "nameKh": "ខេកថ្ងៃកំណើត",     "price": 14  },
+  { "id": "c5", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🥭", "image": "images/mango.jpg","name": "Mango Cake",         "nameKh": "ខេកស្វាយ",        "price": 9.5 },
+  { "id": "c5", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🥭", "image": "images/koromi.jpg","name": "Mango Cake",         "nameKh": "ខេកស្វាយ",        "price": 9.5 },
+  { "id": "c5", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🥭", "image": "images/fruit.jpg","name": "Mango Cake",         "nameKh": "ខេកស្វាយ",        "price": 9.5 },
+  { "id": "c5", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🥭", "image": "images/football.jpg","name": "Mango Cake",         "nameKh": "ខេកស្វាយ",        "price": 9.5 },
+  { "id": "c5", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🥭", "image": "images/animal.jpg","name": "Mango Cake",         "nameKh": "ខេកស្វាយ",        "price": 9.5 },
+  { "id": "c5", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🥭", "image": "images/khmercake1.jpg","name": "Mango Cake",         "nameKh": "ខេកស្វាយ",        "price": 9.5 },
+  { "id": "c5", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🥭", "image": "images/khmercake2.jpg","name": "Mango Cake",         "nameKh": "ខេកស្វាយ",        "price": 9.5 },
+  { "id": "c5", "cat": "cake",   "catLabel": "🎂 ខេក · Cake",     "emoji": "🥭", "image": "images/khmercake3.jpg","name": "Mango Cake",         "nameKh": "ខេកស្វាយ",        "price": 9.5 },
+  
+  { "id": "b1", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🥐", "image": "images/.jpg","name": "Butter Croissant",   "nameKh": "ក្រូវ៉ាសង់ប៊ឺ",    "price": 1.5 },
+  { "id": "b2", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🍞", "image": "images/.jpg","name": "French Baguette",    "nameKh": "នំបុ័ងបារាំង",     "price": 1.2 },
+  { "id": "b3", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🥖", "image": "images/.jpg","name": "Whole Wheat Loaf",   "nameKh": "នំបុ័ងស្រូវសាលី",  "price": 2.2 },
+  { "id": "b4", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🍩", "image": "images/.jpg","name": "Glazed Donut",       "nameKh": "ដូណាត់",          "price": 1   },
+  { "id": "b5", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🥪", "image": "images/.jpg","name": "Sandwich Bread",     "nameKh": "នំបុ័ងសាំងវិច",    "price": 1.8 },
 
-  { "id": "b1", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🥐", "name": "Butter Croissant",   "nameKh": "ក្រូវ៉ាសង់ប៊ឺ",    "price": 1.5 },
-  { "id": "b2", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🍞", "name": "French Baguette",    "nameKh": "នំបុ័ងបារាំង",     "price": 1.2 },
-  { "id": "b3", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🥖", "name": "Whole Wheat Loaf",   "nameKh": "នំបុ័ងស្រូវសាលី",  "price": 2.2 },
-  { "id": "b4", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🍩", "name": "Glazed Donut",       "nameKh": "ដូណាត់",          "price": 1   },
-  { "id": "b5", "cat": "bread",  "catLabel": "🍞 នំបុ័ង · Bread", "emoji": "🥪", "name": "Sandwich Bread",     "nameKh": "នំបុ័ងសាំងវិច",    "price": 1.8 },
-
-  { "id": "k1", "cat": "cookie", "catLabel": "🍪 នំខូគី · Cookies", "emoji": "🍪", "name": "Butter Cookie",    "nameKh": "នំខូគីប៊ឺ",       "price": 3   },
-  { "id": "k2", "cat": "cookie", "catLabel": "🍪 នំខូគី · Cookies", "emoji": "🍫", "name": "Choco Chip Cookie", "nameKh": "នំខូគីសូកូឡា",   "price": 3.2 }
+  { "id": "k1", "cat": "cookie", "catLabel": "🍪 នំខូគី · Cookies", "emoji": "🍪", "image": "images/.jpg","name": "Butter Cookie",    "nameKh": "នំខូគីប៊ឺ",       "price": 3   },
+  { "id": "k2", "cat": "cookie", "catLabel": "🍪 នំខូគី · Cookies", "emoji": "🍫", "image": "images/.jpg","name": "Choco Chip Cookie", "nameKh": "នំខូគីសូកូឡា",   "price": 3.2 }
 ]
