@@ -588,10 +588,10 @@ function checkout(){
   const totalItems = Object.values(cart).reduce((a,b)=>a+b,0);
   if (totalItems === 0) return;
 
-  const itemNames = {};
+  const itemsPayload = {};
   Object.entries(cart).forEach(([id, qty]) => {
     const p = products.find(x => x.id === id);
-    itemNames[p.name] = qty;
+    itemsPayload[id] = { name: p.name, qty };
   });
   const total = Object.entries(cart).reduce((sum,[id,qty])=>{
     const p = products.find(x=>x.id===id);
@@ -603,7 +603,7 @@ function checkout(){
   const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null;
 
   const payload = {
-    items: itemNames,
+    items: itemsPayload,
     totalUsd: total,
     totalRiel: Math.round(total * USD_TO_KHR / 100) * 100,
     customer: tgUser ? {
@@ -628,7 +628,7 @@ function checkout(){
   };
 
   const showFailureFallback = () => {
-    const lines = Object.entries(itemNames).map(([name, qty]) => `${name} x${qty}`);
+    const lines = Object.values(itemsPayload).map(item => `${item.name} x${item.qty}`);
     const orderText = `🧁 New order from Lily Cake & Bread:\n${lines.join('\n')}\n\nTotal: ${formatBoth(total)}`;
     const shopTelegramUsername = 'lilycakeshop'; // 👉 change this to your real Telegram username (no @)
 
