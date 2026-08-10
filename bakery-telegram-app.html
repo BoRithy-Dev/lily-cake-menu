@@ -203,13 +203,13 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
 /* ---------- Cart pill ---------- */
 .cart-pill{
   position:fixed;left:50%;transform:translateX(-50%) translateY(120%);
-  bottom:78px;max-width:440px;width:calc(100% - 32px);
+  bottom:127px;max-width:440px;width:calc(100% - 32px);
   background:var(--ink);color:#fff;border-radius:16px;padding:12px 16px;
   display:flex;align-items:center;justify-content:space-between;
   box-shadow:0 10px 24px rgba(0,0,0,.25);z-index:30;transition:transform .25s ease;
 }
 .cart-pill.show{transform:translateX(-50%) translateY(0);}
-.cart-pill .go{color:var(--gold);font-weight:800;font-size:.85rem;}
+.cart-pill .go{color:var(--gold);font-weight:800;font-size:.85rem;cursor: pointer;}
 
 /* ---------- Bottom nav ---------- */
 .bottom-nav{
@@ -332,11 +332,11 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
         </div>
       </div>
 
-      <a href="https://t.me/lilycakeshop" target="_blank" class="info-card">
+      <a href="https://t.me/Nou_ly" target="_blank" class="info-card">
         <div class="info-icon">✈️</div>
         <div>
           <p class="info-title">Telegram</p>
-          <p class="info-sub">@lilycakeshop — message us anytime</p>
+          <p class="info-sub">@LyLyCake & Flower — message us anytime</p>
         </div>
       </a>
       <a href="tel:+855070914050" class="info-card">
@@ -346,7 +346,7 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
           <p class="info-sub">070914050</p>
         </div>
       </a>
-      <a href="https://facebook.com/lilycakeshop" target="_blank" class="info-card">
+      <a href="https://www.facebook.com/lylycakeflower" target="_blank" class="info-card">
         <div class="info-icon">👍</div>
         <div>
           <p class="info-title">Facebook Page</p>
@@ -379,7 +379,7 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
         <div class="info-icon">📍</div>
         <div>
           <p class="info-title">អាសយដ្ឋាន / Address</p>
-          <p class="info-sub">St. 271, Phnom Penh, Cambodia</p>
+          <p class="info-sub">🏠ទីតាំងហាង: ច្បារអំពៅ លើផ្លូវព្រែកបារាំង​ (ហៅផ្លូវប៉េតុងថ្មី)</p>
         </div>
       </div>
       <button class="add-btn" style="margin-top:4px" onclick="openMap()">🧭 បើកផែនទី · Get Directions</button>
@@ -608,15 +608,15 @@ function updateCartPill(){
     `${totalItems} item${totalItems!==1?'s':''} · ${formatBoth(totalPrice)}`;
   pill.classList.toggle('show', totalItems > 0);
 
-  if (tg && tg.MainButton) {
-    if (totalItems > 0) {
-      tg.MainButton.setText(`Order via Telegram · ${formatUsd(totalPrice)} / ${formatRiel(totalPrice)}`);
-      tg.MainButton.show();
-      tg.MainButton.onClick(checkout);
-    } else {
-      tg.MainButton.hide();
-    }
-  }
+  // if (tg && tg.MainButton) {
+  //   if (totalItems > 0) {
+  //     tg.MainButton.setText(`Order via Telegram · ${formatUsd(totalPrice)} / ${formatRiel(totalPrice)}`);
+  //     tg.MainButton.show();
+  //     tg.MainButton.onClick(checkout);
+  //   } else {
+  //     tg.MainButton.hide();
+  //   }
+  // }
 }
 
 function checkout(){
@@ -773,7 +773,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
 });
 
 function openMap(){
-  const url = 'https://www.google.com/maps/search/?api=1&query=Phnom+Penh+Cambodia';
+  const url = 'https://maps.app.goo.gl/g8vTAm5pvgahVTEb9?g_st=ic';
   if (tg && tg.openLink) tg.openLink(url);
   else window.open(url, '_blank');
 }
