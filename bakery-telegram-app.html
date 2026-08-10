@@ -124,7 +124,22 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
   background:var(--surface);border-radius:var(--radius);border:1px solid var(--line);
   padding:12px;display:flex;flex-direction:column;gap:6px;position:relative;
   animation:cardFadeUp .28s ease both;
+  transition:transform .18s ease, box-shadow .18s ease;
 }
+@media (hover: hover){
+  .product-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 10px 22px rgba(58,42,30,.12);
+    border-color:var(--gold-soft);
+  }
+  .product-card:hover .product-photo{
+    transform:scale(1.04);
+  }
+  .product-card:hover .add-btn{
+    background:var(--berry-dark);
+  }
+}
+.product-photo{transition:transform .25s ease;}
 .product-grid .product-card:nth-child(1){animation-delay:.00s}
 .product-grid .product-card:nth-child(2){animation-delay:.03s}
 .product-grid .product-card:nth-child(3){animation-delay:.06s}
@@ -209,7 +224,43 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
   box-shadow:0 10px 24px rgba(0,0,0,.25);z-index:30;transition:transform .25s ease;
 }
 .cart-pill.show{transform:translateX(-50%) translateY(0);}
-.cart-pill .go{color:var(--gold);font-weight:800;font-size:.85rem;cursor: pointer;}
+.cart-pill .go{color:var(--gold);font-weight:800;font-size:.85rem;}
+
+/* ---------- My Bag view ---------- */
+.bag-back-btn{
+  border:none;background:var(--surface-warm);color:var(--ink);
+  width:34px;height:34px;border-radius:10px;font-size:1.1rem;font-weight:800;
+  margin-right:10px;flex-shrink:0;
+}
+.bag-item{
+  display:flex;gap:12px;align-items:center;
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:10px;margin-bottom:10px;
+}
+.bag-item-photo{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--surface-warm);}
+.bag-item-emoji{
+  width:56px;height:56px;border-radius:10px;background:var(--surface-warm);
+  display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;
+}
+.bag-item-info{flex:1;min-width:0;}
+.bag-item-name{font-weight:800;font-size:.86rem;}
+.bag-item-price{color:var(--berry);font-weight:700;font-size:.8rem;}
+.bag-item-controls{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.bag-remove-btn{
+  border:none;background:none;color:var(--ink-soft);font-size:1.1rem;
+  width:28px;height:28px;flex-shrink:0;
+}
+
+.bag-footer{
+  position:fixed;left:0;right:0;bottom:0;
+  background:var(--surface);border-top:1px solid var(--line);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  display:none;align-items:center;justify-content:space-between;
+  max-width:480px;margin:0 auto;z-index:35;
+}
+.bag-footer.show{display:flex;}
+.bag-footer-total{display:flex;flex-direction:column;line-height:1.2;}
+.bag-footer-total .fw-bold{font-size:1.05rem;color:var(--berry-dark);}
 
 /* ---------- Bottom nav ---------- */
 .bottom-nav{
@@ -455,12 +506,39 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
       </a>
     </section>
 
+    <!-- MY BAG VIEW -->
+    <section id="view-bag" class="view">
+      <div class="section-title">
+        <button class="bag-back-btn" onclick="closeBag()">←</button>
+        <div>
+          <div class="eyebrow">Review your order</div>
+          <h2 class="h5 mb-0">កាបូបខ្ញុំ · My Bag</h2>
+        </div>
+      </div>
+
+      <div id="bagList"></div>
+      <p id="bagEmptyMsg" class="text-center text-muted-soft small mt-4" style="display:none;">
+        កាបូបទទេ · Your bag is empty
+      </p>
+    </section>
+
   </main>
 
   <!-- CART PILL -->
-  <div class="cart-pill" id="cartPill" onclick="checkout()">
+  <div class="cart-pill" id="cartPill" onclick="openBag()">
     <span id="cartText">0 item</span>
-    <span class="go">Order via Telegram →</span>
+    <span class="go">មើលកាបូប · View Bag →</span>
+  </div>
+
+  <!-- BAG CHECKOUT FOOTER (shown only inside the Bag view) -->
+  <div class="bag-footer" id="bagFooter">
+    <div class="bag-footer-total">
+      <span class="text-muted-soft small">សរុប · Total</span>
+      <span id="bagTotalText" class="fw-bold"></span>
+    </div>
+    <button class="add-btn" style="width:auto;padding:10px 22px;" onclick="checkout()">
+      ✅ បញ្ជាក់កម្មង់ · Confirm Order
+    </button>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -587,6 +665,7 @@ function addItem(id){
   haptic();
   renderProducts(currentCat, currentSubcat);
   updateCartPill();
+  renderBag();
 }
 function removeItem(id){
   if (!cart[id]) return;
@@ -595,6 +674,7 @@ function removeItem(id){
   haptic();
   renderProducts(currentCat, currentSubcat);
   updateCartPill();
+  renderBag();
 }
 
 function updateCartPill(){
@@ -608,15 +688,78 @@ function updateCartPill(){
     `${totalItems} item${totalItems!==1?'s':''} · ${formatBoth(totalPrice)}`;
   pill.classList.toggle('show', totalItems > 0);
 
-  // if (tg && tg.MainButton) {
-  //   if (totalItems > 0) {
-  //     tg.MainButton.setText(`Order via Telegram · ${formatUsd(totalPrice)} / ${formatRiel(totalPrice)}`);
-  //     tg.MainButton.show();
-  //     tg.MainButton.onClick(checkout);
-  //   } else {
-  //     tg.MainButton.hide();
-  //   }
-  // }
+  const bagTotalText = document.getElementById('bagTotalText');
+  if (bagTotalText) bagTotalText.textContent = formatBoth(totalPrice);
+}
+
+/* ---------------- My Bag view ---------------- */
+function openBag(){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-bag').classList.add('active');
+  document.getElementById('bagFooter').classList.toggle('show', Object.keys(cart).length > 0);
+  renderBag();
+  haptic();
+}
+
+function closeBag(){
+  document.getElementById('bagFooter').classList.remove('show');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-menu').classList.add('active');
+  document.querySelector('.nav-btn[data-view="menu"]').classList.add('active');
+  haptic();
+}
+
+function renderBag(){
+  const list = document.getElementById('bagList');
+  const emptyMsg = document.getElementById('bagEmptyMsg');
+  if (!list) return;
+
+  const entries = Object.entries(cart);
+  list.innerHTML = '';
+
+  if (entries.length === 0) {
+    emptyMsg.style.display = 'block';
+    document.getElementById('bagFooter').classList.remove('show');
+    return;
+  }
+  emptyMsg.style.display = 'none';
+
+  entries.forEach(([id, qty]) => {
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    const row = document.createElement('div');
+    row.className = 'bag-item';
+    row.innerHTML = `
+      ${p.image
+        ? `<img class="bag-item-photo" src="${p.image}" alt="${p.name}"
+             onerror="this.outerHTML='<div class=\\'bag-item-emoji\\'>${p.emoji || '🧁'}</div>'">`
+        : `<div class="bag-item-emoji">${p.emoji || '🧁'}</div>`
+      }
+      <div class="bag-item-info">
+        <div class="bag-item-name">${p.name}</div>
+        <div class="bag-item-price">${formatBoth(p.price * qty)}</div>
+      </div>
+      <div class="bag-item-controls">
+        <button class="qty-btn" onclick="removeItem('${id}')">−</button>
+        <span class="qty-count">${qty}</span>
+        <button class="qty-btn" onclick="addItem('${id}')">+</button>
+        <button class="bag-remove-btn" onclick="deleteFromBag('${id}')">🗑️</button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function deleteFromBag(id){
+  delete cart[id];
+  haptic();
+  renderProducts(currentCat, currentSubcat);
+  updateCartPill();
+  renderBag();
+  if (Object.keys(cart).length === 0) {
+    document.getElementById('bagFooter').classList.remove('show');
+  }
 }
 
 function checkout(){
@@ -660,6 +803,9 @@ function checkout(){
     Object.keys(cart).forEach(id => delete cart[id]);
     renderProducts(currentCat, currentSubcat);
     updateCartPill();
+    renderBag();
+    document.getElementById('bagFooter').classList.remove('show');
+    closeBag();
   };
 
   const showFailureFallback = () => {
