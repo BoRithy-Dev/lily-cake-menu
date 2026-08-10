@@ -171,6 +171,10 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
   border:none;background:var(--berry);color:#fff;font-weight:800;font-size:.8rem;
   padding:7px 0;border-radius:10px;width:100%;margin-top:4px;
 }
+.card-controls{margin-top:4px;}
+@keyframes controlsPop{0%{transform:scale(.9);}55%{transform:scale(1.06);}100%{transform:scale(1);}}
+.card-controls .qty-row,
+.card-controls .add-btn{animation:controlsPop .2s ease;}
 
 /* Promotion */
 .promo-hero{
@@ -310,7 +314,7 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
     <div class="brand-row">
       <div class="brand-badge">🍰</div>
       <div>
-        <p class="brand-name">Lily Cake &amp; Bread</p>
+        <p class="brand-name">Lyly Cake &amp; Bread</p>
         <p class="brand-sub font-kh">ហាង លីលី ខេក និង នំបុ័ង · បើកជារៀងរាល់ថ្ងៃ</p>
       </div>
     </div>
@@ -647,23 +651,33 @@ function renderProducts(filter='all', subFilter='all'){
       <div class="product-name-kh font-kh">${p.nameKh}</div>
       <div class="product-price">${formatUsd(p.price)}</div>
       <div class="product-price-kh">${formatRiel(p.price)}</div>
-      ${qty === 0
-        ? `<button class="add-btn" onclick="addItem('${p.id}')">+ បន្ថែម · Add</button>`
-        : `<div class="qty-row">
-             <button class="qty-btn" onclick="removeItem('${p.id}')">−</button>
-             <span class="qty-count">${qty}</span>
-             <button class="qty-btn" onclick="addItem('${p.id}')">+</button>
-           </div>`
-      }
+      <div class="card-controls" data-controls-for="${p.id}">${cardControlsHtml(p.id, qty)}</div>
     `;
     grid.appendChild(card);
   });
 }
 
+function cardControlsHtml(id, qty){
+  return qty === 0
+    ? `<button class="add-btn" onclick="addItem('${id}')">+ បន្ថែម · Add</button>`
+    : `<div class="qty-row">
+         <button class="qty-btn" onclick="removeItem('${id}')">−</button>
+         <span class="qty-count">${qty}</span>
+         <button class="qty-btn" onclick="addItem('${id}')">+</button>
+       </div>`;
+}
+
+// Updates just one card's +/- controls in place — avoids re-rendering (and re-animating) the whole grid
+function updateCardControls(id){
+  const el = document.querySelector(`[data-controls-for="${id}"]`);
+  if (!el) return; // card isn't in the currently filtered view — nothing to update
+  el.innerHTML = cardControlsHtml(id, cart[id] || 0);
+}
+
 function addItem(id){
   cart[id] = (cart[id] || 0) + 1;
   haptic();
-  renderProducts(currentCat, currentSubcat);
+  updateCardControls(id);
   updateCartPill();
   renderBag();
 }
@@ -672,7 +686,7 @@ function removeItem(id){
   cart[id] -= 1;
   if (cart[id] <= 0) delete cart[id];
   haptic();
-  renderProducts(currentCat, currentSubcat);
+  updateCardControls(id);
   updateCartPill();
   renderBag();
 }
