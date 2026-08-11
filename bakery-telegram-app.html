@@ -266,6 +266,22 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
 .bag-footer-total{display:flex;flex-direction:column;line-height:1.2;}
 .bag-footer-total .fw-bold{font-size:1.05rem;color:var(--berry-dark);}
 
+/* ---------- Custom Cake Request form ---------- */
+.custom-form{display:flex;flex-direction:column;}
+.form-label{
+  font-size:.78rem;font-weight:800;color:var(--ink-soft);
+  margin:14px 0 6px;
+}
+.form-label:first-child{margin-top:0;}
+.form-input-custom,.form-select-custom{
+  width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);
+  background:var(--surface);color:var(--ink);font-family:inherit;font-size:.88rem;
+}
+.form-input-custom:focus,.form-select-custom:focus{
+  outline:none;border-color:var(--gold);
+}
+textarea.form-input-custom{resize:vertical;}
+
 /* ---------- Bottom nav ---------- */
 .bottom-nav{
   position:sticky;bottom:0;left:0;right:0;
@@ -353,6 +369,14 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
         <div class="eyebrow" style="color:var(--gold-soft)">Limited time</div>
         <h2 class="h5 text-white mb-1">ទិញ ២ ចេញ ១៥%</h2>
         <p class="mb-0 small" style="opacity:.9">Buy any 2 cakes and get 15% off — this week only.</p>
+      </div>
+
+      <div class="promo-card" style="cursor:pointer;border-color:var(--gold);" onclick="openCustomOrder()">
+        <div class="promo-icon">🎂</div>
+        <div>
+          <p class="info-title">កម្មង់ខេកពិសេស · Custom Cake Request</p>
+          <p class="info-sub">Design your own cake — size, flavor, message &amp; reference photo →</p>
+        </div>
       </div>
 
       <div class="promo-card">
@@ -526,6 +550,52 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
       </p>
     </section>
 
+    <!-- CUSTOM CAKE REQUEST VIEW -->
+    <section id="view-custom" class="view">
+      <div class="section-title">
+        <button class="bag-back-btn" onclick="closeCustomOrder()">←</button>
+        <div>
+          <div class="eyebrow">Design your own</div>
+          <h2 class="h5 mb-0">កម្មង់ខេកពិសេស · Custom Cake</h2>
+        </div>
+      </div>
+
+      <form id="customOrderForm" class="custom-form">
+        <label class="form-label">ទំហំ · Size</label>
+        <select id="customSize" class="form-select-custom" required>
+          <option value="">ជ្រើសរើស · Select...</option>
+          <option value="Small (~15cm, 6-8 pax)">Small (~15cm, 6-8 pax)</option>
+          <option value="Medium (~20cm, 10-14 pax)">Medium (~20cm, 10-14 pax)</option>
+          <option value="Large (~25cm, 16-20 pax)">Large (~25cm, 16-20 pax)</option>
+        </select>
+
+        <label class="form-label">រសជាតិ · Flavor</label>
+        <select id="customFlavor" class="form-select-custom" required>
+          <option value="">ជ្រើសរើស · Select...</option>
+          <option value="Chocolate">🍫 Chocolate</option>
+          <option value="Strawberry">🍓 Strawberry</option>
+          <option value="Mango">🥭 Mango</option>
+          <option value="Vanilla">🍦 Vanilla</option>
+          <option value="Other (see notes)">Other (describe in notes)</option>
+        </select>
+
+        <label class="form-label">សរសេរលើខេក · Message on cake</label>
+        <input type="text" id="customMessage" class="form-input-custom" placeholder="e.g. Happy Birthday Sophea!" maxlength="60">
+
+        <label class="form-label">ថ្ងៃត្រូវការ · Needed by</label>
+        <input type="date" id="customDate" class="form-input-custom" required>
+
+        <label class="form-label">រូបភាព Reference (ស្រេចចិត្ត · optional)</label>
+        <input type="file" id="customPhoto" accept="image/*" class="form-input-custom">
+        <img id="customPhotoPreview" style="display:none;max-width:100%;border-radius:12px;margin-top:8px;">
+
+        <label class="form-label">កំណត់ចំណាំបន្ថែម · Additional notes</label>
+        <textarea id="customNotes" class="form-input-custom" rows="3" placeholder="Any allergies, colors, decorations..."></textarea>
+
+        <button type="submit" class="add-btn mt-3" id="customSubmitBtn">📨 ផ្ញើសំណើ · Send Request</button>
+      </form>
+    </section>
+
   </main>
 
   <!-- CART PILL -->
@@ -641,6 +711,7 @@ function renderProducts(filter='all', subFilter='all'){
     const qty = cart[p.id] || 0;
     const card = document.createElement('div');
     card.className = 'product-card';
+    card.dataset.id = p.id;
     card.innerHTML = `
       ${p.image
         ? `<img class="product-photo" data-full="${p.image}" src="${p.image}" alt="${p.name}"
@@ -768,13 +839,107 @@ function renderBag(){
 function deleteFromBag(id){
   delete cart[id];
   haptic();
-  renderProducts(currentCat, currentSubcat);
+  updateCardControls(id);
   updateCartPill();
   renderBag();
   if (Object.keys(cart).length === 0) {
     document.getElementById('bagFooter').classList.remove('show');
   }
 }
+
+/* ---------------- Custom Cake Request ---------------- */
+let customPhotoBase64 = null; // holds the compressed photo once selected
+
+function openCustomOrder(){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-custom').classList.add('active');
+  haptic();
+}
+
+function closeCustomOrder(){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-promotion').classList.add('active');
+  document.querySelector('.nav-btn[data-view="promotion"]').classList.add('active');
+  haptic();
+}
+
+// Compress a selected photo client-side (max 800px, JPEG ~0.7 quality) before converting to base64,
+// so the payload stays small and uploads fast even on mobile data.
+document.getElementById('customPhoto').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) { customPhotoBase64 = null; return; }
+
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let { width, height } = img;
+      if (width > height && width > MAX) { height *= MAX / width; width = MAX; }
+      else if (height > MAX) { width *= MAX / height; height = MAX; }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+      customPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+      const preview = document.getElementById('customPhotoPreview');
+      preview.src = customPhotoBase64;
+      preview.style.display = 'block';
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('customOrderForm').addEventListener('submit', e => {
+  e.preventDefault();
+
+  const size = document.getElementById('customSize').value;
+  const flavor = document.getElementById('customFlavor').value;
+  const message = document.getElementById('customMessage').value.trim();
+  const neededDate = document.getElementById('customDate').value;
+  const notes = document.getElementById('customNotes').value.trim();
+
+  const tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null;
+  const customer = tgUser ? {
+    id: tgUser.id, username: tgUser.username,
+    first_name: tgUser.first_name, last_name: tgUser.last_name,
+  } : null;
+
+  const submitBtn = document.getElementById('customSubmitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '⏳ កំពុងផ្ញើ · Sending...';
+
+  fetch(`${BACKEND_URL}/api/custom-order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ size, flavor, message, neededDate, notes, photo: customPhotoBase64, customer }),
+  })
+    .then(res => res.ok ? res.json() : Promise.reject(new Error('Bad response')))
+    .then(data => {
+      if (!data.ok) throw new Error('Server error');
+      const msg = 'សំណើត្រូវបានផ្ញើដោយជោគជ័យ! · Request sent successfully! 🎂';
+      if (tg && tg.showPopup) {
+        tg.showPopup({ title: '✅ Success', message: msg, buttons: [{ id: 'ok', type: 'default', text: 'OK' }] });
+      } else {
+        alert(msg);
+      }
+      document.getElementById('customOrderForm').reset();
+      document.getElementById('customPhotoPreview').style.display = 'none';
+      customPhotoBase64 = null;
+      closeCustomOrder();
+    })
+    .catch(() => {
+      alert('មិនអាចផ្ញើសំណើបានទេ សូមព្យាយាមម្តងទៀត · Could not send. Please try again.');
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '📨 ផ្ញើសំណើ · Send Request';
+    });
+});
 
 function checkout(){
   const totalItems = Object.values(cart).reduce((a,b)=>a+b,0);
