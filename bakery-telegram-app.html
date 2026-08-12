@@ -161,6 +161,14 @@ main{flex:1;overflow-y:auto;padding:14px 16px 100px;}
 .product-name-kh{font-size:.72rem;color:var(--ink-soft);font-weight:600;}
 .product-price{color:var(--berry);font-weight:800;font-size:.88rem;margin-top:2px;}
 .product-price-kh{color:var(--ink-soft);font-weight:700;font-size:.7rem;margin-top:-4px;}
+
+.size-chip-row{display:flex;gap:5px;margin:2px 0 1px;}
+.size-chip{
+  flex:1;border:1.5px solid var(--line);background:var(--surface-warm);
+  color:var(--ink-soft);font-weight:800;font-size:.72rem;
+  padding:4px 0;border-radius:8px;transition:.15s;
+}
+.size-chip.active{background:var(--berry);border-color:var(--berry);color:#fff;}
 .qty-row{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
 .qty-btn{
   width:28px;height:28px;border-radius:50%;border:none;background:var(--gold-soft);
@@ -669,6 +677,29 @@ function haptic(type){
 /* ---------------- Product data (loaded from products.json) ---------------- */
 let products = [];
 const cart = {};
+const selectedSizeIndex = {}; // { productId: index } — which size is picked before adding to cart
+
+// A "variant" is either a plain product (no sizes) or a specific size of a product.
+// Cart keys look like "c1" (no sizes) or "c1__1" (product c1, size index 1).
+function resolveVariant(cartKey){
+  const [id, idxStr] = cartKey.split('__');
+  const product = products.find(x => x.id === id);
+  if (!product) return null;
+  if (idxStr !== undefined && Array.isArray(product.sizes)) {
+    const size = product.sizes[Number(idxStr)];
+    return { product, price: size.price, sizeLabel: size.label };
+  }
+  return { product, price: product.price, sizeLabel: null };
+}
+
+function cartKeyFor(productId){
+  const p = products.find(x => x.id === productId);
+  if (p && Array.isArray(p.sizes) && p.sizes.length > 0) {
+    const idx = selectedSizeIndex[productId] ?? 0;
+    return `${productId}__${idx}`;
+  }
+  return productId;
+}
 
 async function loadProducts(){
   try {
@@ -687,6 +718,13 @@ async function loadProducts(){
 
 function buildChips(){
   const chipRow = document.getElementById('chipRow');
+  
+  // Special action chip (not a filter) — opens the Custom Cake Request form
+  const customBtn = document.createElement('button');
+  customBtn.className = 'chip chip-action';
+  customBtn.textContent = '🎂 កម្មង់ពិសេស · Custom';
+  customBtn.onclick = (e) => { e.stopPropagation(); openCustomOrder(); };
+  chipRow.appendChild(customBtn);
   // collect unique categories in the order they first appear
   const seen = new Set();
   products.forEach(p => {
@@ -699,6 +737,8 @@ function buildChips(){
       chipRow.appendChild(btn);
     }
   });
+
+  
 }
 
 function renderProducts(filter='all', subFilter='all'){
@@ -708,7 +748,12 @@ function renderProducts(filter='all', subFilter='all'){
     .filter(p => filter==='all' || p.cat===filter)
     .filter(p => subFilter==='all' || p.subcat===subFilter)
     .forEach(p => {
-    const qty = cart[p.id] || 0;
+    const hasSizes = Array.isArray(p.sizes) && p.sizes.length > 0;
+    const idx = selectedSizeIndex[p.id] ?? 0;
+    const price = hasSizes ? p.sizes[idx].price : p.price;
+    const cartKey = cartKeyFor(p.id);
+    const qty = cart[cartKey] || 0;
+
     const card = document.createElement('div');
     card.className = 'product-card';
     card.dataset.id = p.id;
@@ -720,13 +765,59 @@ function renderProducts(filter='all', subFilter='all'){
       }
       <div class="product-name">${p.name}</div>
       <div class="product-name-kh font-kh">${p.nameKh}</div>
-      <div class="product-price">${formatUsd(p.price)}</div>
-      <div class="product-price-kh">${formatRiel(p.price)}</div>
-      <div class="card-controls" data-controls-for="${p.id}">${cardControlsHtml(p.id, qty)}</div>
+      ${hasSizes ? `<div class="size-chip-row" data-size-for="${p.id}">${sizeChipsHtml(p, idx)}</div>` : ''}
+      <div class="product-price" data-price-for="${p.id}">${formatUsd(price)}</div>
+      <div class="product-price-kh" data-price-kh-for="${p.id}">${formatRiel(price)}</div>
+      <div class="card-controls" data-controls-for="${cartKey}">${cardControlsHtml(cartKey, qty)}</div>
     `;
     grid.appendChild(card);
   });
 }
+
+function sizeChipsHtml(p, selectedIdx){
+  return p.sizes.map((s, i) => `
+    <button class="size-chip ${i === selectedIdx ? 'active' : ''}" data-id="${p.id}" data-idx="${i}">${s.label}</button>
+  `).join('');
+}
+
+// When a size chip is tapped: update the selection, refresh that card's price + active
+// chip highlight + its +/- controls (which now point at the newly-selected variant's cart key)
+function refreshCardPricing(productId, newIdx){
+  selectedSizeIndex[productId] = newIdx;
+  const p = products.find(x => x.id === productId);
+  if (!p) return;
+
+  const price = p.sizes[newIdx].price;
+  const cartKey = cartKeyFor(productId);
+  const qty = cart[cartKey] || 0;
+
+  const priceEl = document.querySelector(`[data-price-for="${productId}"]`);
+  const priceKhEl = document.querySelector(`[data-price-kh-for="${productId}"]`);
+  const sizeRow = document.querySelector(`[data-size-for="${productId}"]`);
+
+  if (priceEl) priceEl.textContent = formatUsd(price);
+  if (priceKhEl) priceKhEl.textContent = formatRiel(price);
+  if (sizeRow) {
+    sizeRow.querySelectorAll('.size-chip').forEach(chip => {
+      chip.classList.toggle('active', Number(chip.dataset.idx) === newIdx);
+    });
+    // the controls container is the next sibling group within the same card
+    const card = sizeRow.closest('.product-card');
+    const controls = card ? card.querySelector('.card-controls') : null;
+    if (controls) {
+      controls.dataset.controlsFor = cartKey;
+      controls.innerHTML = cardControlsHtml(cartKey, qty);
+    }
+  }
+}
+
+document.getElementById('productGrid').addEventListener('click', e => {
+  const sizeChip = e.target.closest('.size-chip');
+  if (sizeChip) {
+    haptic();
+    refreshCardPricing(sizeChip.dataset.id, Number(sizeChip.dataset.idx));
+  }
+});
 
 function cardControlsHtml(id, qty){
   return qty === 0
@@ -765,9 +856,9 @@ function removeItem(id){
 function updateCartPill(){
   const pill = document.getElementById('cartPill');
   const totalItems = Object.values(cart).reduce((a,b)=>a+b,0);
-  const totalPrice = Object.entries(cart).reduce((sum,[id,qty])=>{
-    const p = products.find(x=>x.id===id);
-    return sum + p.price*qty;
+  const totalPrice = Object.entries(cart).reduce((sum,[key,qty])=>{
+    const v = resolveVariant(key);
+    return v ? sum + v.price*qty : sum;
   },0);
   document.getElementById('cartText').textContent =
     `${totalItems} item${totalItems!==1?'s':''} · ${formatBoth(totalPrice)}`;
@@ -810,9 +901,11 @@ function renderBag(){
   }
   emptyMsg.style.display = 'none';
 
-  entries.forEach(([id, qty]) => {
-    const p = products.find(x => x.id === id);
-    if (!p) return;
+  entries.forEach(([key, qty]) => {
+    const v = resolveVariant(key);
+    if (!v) return;
+    const { product: p, price, sizeLabel } = v;
+    const displayName = sizeLabel ? `${p.name} (${sizeLabel})` : p.name;
     const row = document.createElement('div');
     row.className = 'bag-item';
     row.innerHTML = `
@@ -822,14 +915,14 @@ function renderBag(){
         : `<div class="bag-item-emoji">${p.emoji || '🧁'}</div>`
       }
       <div class="bag-item-info">
-        <div class="bag-item-name">${p.name}</div>
-        <div class="bag-item-price">${formatBoth(p.price * qty)}</div>
+        <div class="bag-item-name">${displayName}</div>
+        <div class="bag-item-price">${formatBoth(price * qty)}</div>
       </div>
       <div class="bag-item-controls">
-        <button class="qty-btn" onclick="removeItem('${id}')">−</button>
+        <button class="qty-btn" onclick="removeItem('${key}')">−</button>
         <span class="qty-count">${qty}</span>
-        <button class="qty-btn" onclick="addItem('${id}')">+</button>
-        <button class="bag-remove-btn" onclick="deleteFromBag('${id}')">🗑️</button>
+        <button class="qty-btn" onclick="addItem('${key}')">+</button>
+        <button class="bag-remove-btn" onclick="deleteFromBag('${key}')">🗑️</button>
       </div>
     `;
     list.appendChild(row);
@@ -946,13 +1039,15 @@ function checkout(){
   if (totalItems === 0) return;
 
   const itemsPayload = {};
-  Object.entries(cart).forEach(([id, qty]) => {
-    const p = products.find(x => x.id === id);
-    itemsPayload[id] = { name: p.name, qty };
+  Object.entries(cart).forEach(([key, qty]) => {
+    const v = resolveVariant(key);
+    if (!v) return;
+    const displayName = v.sizeLabel ? `${v.product.name} (${v.sizeLabel})` : v.product.name;
+    itemsPayload[key] = { name: displayName, qty };
   });
-  const total = Object.entries(cart).reduce((sum,[id,qty])=>{
-    const p = products.find(x=>x.id===id);
-    return sum + p.price*qty;
+  const total = Object.entries(cart).reduce((sum,[key,qty])=>{
+    const v = resolveVariant(key);
+    return v ? sum + v.price*qty : sum;
   },0);
 
   // If running inside Telegram, grab the customer's Telegram identity so the
