@@ -10,7 +10,12 @@
     "image": "images/cake-choc-01.jpg",
     "name": "Chocolate Cake",
     "nameKh": "ខេកសូកូឡា",
-    "price": 8.5
+    "price": 8.,
+     "sizes": [
+      { "label": "S", "price": 8.5 },
+      { "label": "M", "price": 12 },
+      { "label": "L", "price": 18 }
+    ]
   },
   {
     "id": "c13",
@@ -22,7 +27,12 @@
     "image": "images/cake-choc-02.jpg",
     "name": "Chocolate Cake",
     "nameKh": "ខេកសូកូឡា",
-    "price": 8.5
+    "price": 8.5,
+     "sizes": [
+      { "label": "S", "price": 8.5 },
+      { "label": "M", "price": 12 },
+      { "label": "L", "price": 18 }
+    ]
   },
     {
     "id": "c14",
@@ -34,7 +44,12 @@
     "image": "images/cake-choc-03.jpg",
     "name": "Chocolate Cake",
     "nameKh": "ខេកសូកូឡា",
-    "price": 8.5
+    "price": 8.5,
+       "sizes": [
+      { "label": "S", "price": 8.5 },
+      { "label": "M", "price": 12 },
+      { "label": "L", "price": 18 }
+    ]
   },
     {
     "id": "c15",
@@ -46,7 +61,12 @@
     "image": "images/cake-choc-04.jpg",
     "name": "Chocolate Cake",
     "nameKh": "ខេកសូកូឡា",
-    "price": 8.5
+    "price": 8.5,
+       "sizes": [
+      { "label": "S", "price": 8.5 },
+      { "label": "M", "price": 12 },
+      { "label": "L", "price": 18 }
+    ]
   },
     {
     "id": "c16",
