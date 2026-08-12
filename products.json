@@ -10,7 +10,7 @@
     "image": "images/cake-choc-01.jpg",
     "name": "Chocolate Cake",
     "nameKh": "ខេកសូកូឡា",
-    "price": 8.,
+    "price": 8,
      "sizes": [
       { "label": "S", "price": 8.5 },
       { "label": "M", "price": 12 },
